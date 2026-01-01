@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة الحوكمة والتسيير</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Cairo', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 50%, #7b1fa2 100%);
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(106, 27, 154, 0.3);
+    }
+    
+    .nav-link {
+      transition: color 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: #ce93d8;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      animation: slideUp 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .tab-button {
+      transition: all 0.3s ease;
+      padding: 12px 24px;
+      font-weight: 600;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+    }
+    
+    .tab-button.active {
+      background-color: #ffffff;
+      color: #4a148c;
+    }
+    
+    .tab-button:not(.active) {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #e1bee7;
+    }
+    
+    .tab-button:not(.active):hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .unit-item {
+      transition: all 0.3s ease;
+    }
+    
+    .unit-item:hover {
+      background-color: #f3e5f5;
+    }
+    
+    .unit-item.completed {
+      background-color: #e8f5e9;
+    }
+    
+    .question-option {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid #e1bee7;
+      background-color: #ffffff;
+    }
+    
+    .question-option:hover {
+      border-color: #6a1b9a;
+      background-color: #f3e5f5;
+      transform: translateX(-4px);
+    }
+    
+    .question-option.selected {
+      border-color: #6a1b9a;
+      background-color: #e1bee7;
+    }
+    
+    .progress-step {
+      transition: all 0.3s ease;
+    }
+    
+    .progress-step.active {
+      background-color: #6a1b9a;
+      transform: scale(1.2);
+    }
+    
+    .progress-step.completed {
+      background-color: #4caf50;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto">
+  <div class="w-full h-full" style="background-color: #f3e5f5;"><!-- Assessment Modal -->
+   <div id="assessmentModal" class="modal-overlay">
+    <div class="modal-content max-w-4xl w-full mx-4">
+     <div class="rounded-2xl shadow-2xl overflow-hidden" style="background-color: #ffffff;">
+      <div class="gradient-bg p-8">
+       <div class="flex justify-between items-start mb-6">
+        <div>
+         <h2 class="text-3xl font-bold mb-2" style="color: #ffffff;">تقييم احتياجات شركتك</h2>
+         <p class="text-lg" style="color: #e1bee7;">أجب على الأسئلة التالية لنحدد الدورات المناسبة لك</p>
+        </div><button id="closeAssessment" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:opacity-80" style="background-color: rgba(255, 255, 255, 0.3);">
+         <svg class="w-6 h-6" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+         </svg></button>
+       </div><!-- Progress Indicator -->
+       <div class="flex items-center justify-center gap-3 mb-4">
+        <div id="progressIndicator" class="flex items-center gap-2"><!-- Progress dots will be added here -->
+        </div>
+       </div>
+       <div class="text-center"><span id="progressText" class="text-lg font-semibold" style="color: #ffffff;">السؤال 1 من 8</span>
+       </div>
+      </div>
+      <div class="p-8">
+       <div id="assessmentContent"><!-- Questions will be dynamically loaded here -->
+       </div>
+       <div class="flex gap-4 mt-8"><button id="prevQuestion" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #e0e0e0; color: #424242; display: none;"> السؤال السابق </button> <button id="nextQuestion" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6a1b9a; color: #ffffff;" disabled> السؤال التالي </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Results Modal -->
+   <div id="resultsModal" class="modal-overlay">
+    <div class="modal-content max-w-4xl w-full mx-4">
+     <div class="rounded-2xl shadow-2xl overflow-hidden" style="background-color: #ffffff;">
+      <div class="gradient-bg p-8">
+       <div class="text-center">
+        <svg class="w-20 h-20 mx-auto mb-4" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+        </svg>
+        <h2 class="text-3xl font-bold mb-2" style="color: #ffffff;">تحليل احتياجات شركتك</h2>
+        <p class="text-lg" style="color: #e1bee7;">بناءً على إجاباتك، إليك توصياتنا</p>
+       </div>
+      </div>
+      <div class="p-8">
+       <div id="assessmentSummary" class="mb-8 p-6 rounded-xl" style="background-color: #f3e5f5;"><!-- Summary will be added here -->
+       </div>
+       <h3 class="text-2xl font-bold mb-6" style="color: #4a148c;">الدورات الموصى بها لشركتك</h3>
+       <div id="recommendedCourses" class="space-y-4 mb-8"><!-- Recommended courses will be added here -->
+       </div>
+       <div class="flex gap-4"><button id="closeResults" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #e0e0e0; color: #424242;"> إغلاق </button> <button id="viewAllCourses" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6a1b9a; color: #ffffff;"> عرض جميع الدورات </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Payment Modal -->
+   <div id="paymentModal" class="modal-overlay">
+    <div class="modal-content max-w-2xl w-full mx-4">
+     <div class="rounded-2xl shadow-2xl overflow-hidden" style="background-color: #ffffff;">
+      <div class="gradient-bg p-8">
+       <svg class="w-16 h-16 mx-auto mb-4" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
+       </svg>
+       <h2 class="text-3xl font-bold text-center" style="color: #ffffff;">إتمام عملية الشراء</h2>
+       <p class="text-center mt-2" style="color: #e1bee7;" id="paymentCourseSubtitle">دورة تدريبية متخصصة</p>
+       <div class="mt-4 p-4 rounded-lg" style="background-color: rgba(255,255,255,0.2);">
+        <div class="flex justify-between items-center"><span class="text-lg font-semibold" style="color: #ffffff;">السعر الإجمالي:</span> <span class="text-3xl font-bold" style="color: #ce93d8;" id="coursePrice">15,000 دج</span>
+        </div>
+       </div>
+      </div>
+      <div class="p-8">
+       <div class="mb-6 p-4 rounded-lg" style="background-color: #fff3e0; border-right: 4px solid #ff9800;">
+        <p class="font-semibold" style="color: #e65100;">📢 هذه استمارة شراء توضيحية فقط</p>
+        <p class="text-sm mt-1" style="color: #ef6c00;">لا يتم خصم أي مبالغ حقيقية. هذا نموذج تجريبي لعرض تجربة الشراء.</p>
+       </div>
+       <form id="paymentForm">
+        <h3 class="text-xl font-bold mb-4" style="color: #4a148c;">المعلومات الشخصية</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+         <div><label for="pay-firstname" class="block mb-2 font-semibold" style="color: #4a148c;">الاسم الأول *</label> <input type="text" id="pay-firstname" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="أحمد" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+         </div>
+         <div><label for="pay-lastname" class="block mb-2 font-semibold" style="color: #4a148c;">اسم العائلة *</label> <input type="text" id="pay-lastname" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="محمد" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+         </div>
+        </div>
+        <div class="mb-6"><label for="pay-email" class="block mb-2 font-semibold" style="color: #4a148c;">البريد الإلكتروني *</label> <input type="email" id="pay-email" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="example@email.com" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6"><label for="pay-phone" class="block mb-2 font-semibold" style="color: #4a148c;">رقم الجوال *</label> <input type="tel" id="pay-phone" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="05XXXXXXXX" pattern="[0-9]{10}" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <h3 class="text-xl font-bold mb-4 mt-8" style="color: #4a148c;">معلومات بطاقة الدفع</h3>
+        <div class="mb-6"><label for="pay-cardname" class="block mb-2 font-semibold" style="color: #4a148c;">الاسم على البطاقة *</label> <input type="text" id="pay-cardname" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="AHMED MOHAMED" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6"><label for="pay-cardnumber" class="block mb-2 font-semibold" style="color: #4a148c;">رقم البطاقة *</label>
+         <div class="relative"><input type="text" id="pay-cardnumber" required maxlength="19" class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="1234 5678 9012 3456" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'" oninput="formatCardNumber(this)">
+          <div class="absolute left-3 top-1/2 transform -translate-y-1/2 flex gap-2">
+           <svg class="w-8 h-8" viewbox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#1434CB" /> <circle cx="18" cy="16" r="8" fill="#EB001B" /> <circle cx="30" cy="16" r="8" fill="#F79E1B" />
+           </svg>
+          </div>
+         </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+         <div><label for="pay-expiry" class="block mb-2 font-semibold" style="color: #4a148c;">تاريخ الانتهاء *</label> <input type="text" id="pay-expiry" required maxlength="5" class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="MM/YY" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'" oninput="formatExpiry(this)">
+         </div>
+         <div><label for="pay-cvv" class="block mb-2 font-semibold" style="color: #4a148c;">رمز CVV *</label> <input type="text" id="pay-cvv" required maxlength="3" class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="123" pattern="[0-9]{3}" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+         </div>
+        </div>
+        <div class="mb-6"><label class="flex items-center gap-3 cursor-pointer"> <input type="checkbox" required class="w-5 h-5" style="accent-color: #6a1b9a;"> <span style="color: #6a1b9a;">أوافق على <a href="#" class="font-bold underline">الشروط والأحكام</a> و <a href="#" class="font-bold underline">سياسة الخصوصية</a></span> </label>
+        </div>
+        <div id="paymentMessage" class="mb-4 p-3 rounded-lg hidden text-center font-semibold"></div>
+        <div class="flex gap-4"><button type="button" id="cancelPayment" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #e0e0e0; color: #424242;"> إلغاء </button> <button type="submit" id="confirmPaymentBtn" class="flex-1 py-3 rounded-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6a1b9a; color: #ffffff;"> تأكيد الشراء </button>
+        </div>
+       </form>
+      </div>
+     </div>
+    </div>
+   </div><!-- Login/Register Modal -->
+   <div id="authModal" class="modal-overlay">
+    <div class="modal-content max-w-md w-full mx-4">
+     <div class="rounded-2xl shadow-2xl overflow-hidden" style="background-color: #ffffff;">
+      <div class="gradient-bg p-8">
+       <svg class="w-16 h-16 mx-auto mb-4" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+       </svg><!-- Tabs -->
+       <div class="flex gap-2 justify-center"><button id="loginTab" class="tab-button active"> تسجيل الدخول </button> <button id="registerTab" class="tab-button"> حساب جديد </button>
+       </div>
+      </div>
+      <div class="p-8"><!-- Login Form -->
+       <form id="loginForm">
+        <h3 class="text-2xl font-bold mb-2 text-center" style="color: #4a148c;">أهلاً بك مجدداً</h3>
+        <p class="text-center mb-6" style="color: #6a1b9a;">سجل دخولك للاستمرار</p>
+        <div class="mb-6"><label for="login-email" class="block mb-2 font-semibold" style="color: #4a148c;">البريد الإلكتروني</label> <input type="email" id="login-email" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="example@email.com" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6"><label for="login-password" class="block mb-2 font-semibold" style="color: #4a148c;">كلمة المرور</label> <input type="password" id="login-password" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="••••••••" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6 flex items-center justify-between"><label class="flex items-center gap-2 cursor-pointer"> <input type="checkbox" class="w-4 h-4" style="accent-color: #6a1b9a;"> <span style="color: #6a1b9a;">تذكرني</span> </label> <a href="#" class="font-semibold transition-all hover:opacity-80" style="color: #6a1b9a;">نسيت كلمة المرور؟</a>
+        </div>
+        <div id="loginMessage" class="mb-4 p-3 rounded-lg hidden text-center font-semibold"></div><button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6a1b9a; color: #ffffff;"> تسجيل الدخول </button>
+       </form><!-- Register Form (Hidden by default) -->
+       <form id="registerForm" style="display: none;">
+        <h3 class="text-2xl font-bold mb-2 text-center" style="color: #4a148c;">انضم إلينا الآن</h3>
+        <p class="text-center mb-6" style="color: #6a1b9a;">أنشئ حسابك وابدأ التعلم</p>
+        <div class="mb-6"><label for="reg-fullname" class="block mb-2 font-semibold" style="color: #4a148c;">الاسم الكامل</label> <input type="text" id="reg-fullname" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="أدخل اسمك الكامل" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6"><label for="reg-email" class="block mb-2 font-semibold" style="color: #4a148c;">البريد الإلكتروني</label> <input type="email" id="reg-email" required class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="example@email.com" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div class="mb-6"><label for="reg-password" class="block mb-2 font-semibold" style="color: #4a148c;">كلمة المرور</label> <input type="password" id="reg-password" required minlength="6" class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="••••••••" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+         <p class="text-xs mt-1" style="color: #6a1b9a;">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
+        </div>
+        <div class="mb-6"><label for="reg-confirm-password" class="block mb-2 font-semibold" style="color: #4a148c;">تأكيد كلمة المرور</label> <input type="password" id="reg-confirm-password" required minlength="6" class="w-full px-4 py-3 rounded-lg border-2 outline-none transition-all" style="border-color: #e1bee7; color: #4a148c;" placeholder="••••••••" onfocus="this.style.borderColor='#6a1b9a'" onblur="this.style.borderColor='#e1bee7'">
+        </div>
+        <div id="registerMessage" class="mb-4 p-3 rounded-lg hidden text-center font-semibold"></div><button type="submit" id="registerBtn" class="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90 shadow-lg" style="background-color: #6a1b9a; color: #ffffff;"> إنشاء حساب </button>
+       </form><button id="closeModal" class="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:opacity-80" style="background-color: rgba(255, 255, 255, 0.3);">
+        <svg class="w-6 h-6" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+        </svg></button>
+      </div>
+     </div>
+    </div>
+   </div><!-- Navigation -->
+   <nav class="w-full shadow-lg" style="background-color: #4a148c;">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+     <div class="flex justify-between items-center">
+      <div class="flex items-center gap-3">
+       <svg class="w-10 h-10" style="fill: #ce93d8;" viewbox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+       </svg>
+       <h1 class="text-2xl font-bold cursor-pointer" style="color: #ffffff;" onclick="showHomePage()">Govertech</h1>
+      </div>
+      <div class="hidden md:flex gap-8"><a href="#" onclick="showHomePage(); return false;" class="nav-link font-semibold" style="color: #ffffff;">الرئيسية</a> <a href="#courses" onclick="showHomePage(); return false;" class="nav-link font-semibold" style="color: #ffffff;">الدورات</a> <a href="#" id="myCoursesLink" class="nav-link font-semibold hidden" onclick="showMyCoursesPage(); return false;" style="color: #ffffff;">دوراتي</a> <a href="#" class="nav-link font-semibold" style="color: #ffffff;">من نحن</a> <a href="#" class="nav-link font-semibold" style="color: #ffffff;">تواصل معنا</a>
+      </div><button id="loginBtn" class="px-6 py-2 rounded-lg font-semibold transition-all hover:opacity-90" style="background-color: #ce93d8; color: #4a148c;"> تسجيل الدخول </button>
+     </div>
+    </div>
+   </nav><!-- Home Page -->
+   <div id="homePage"><!-- Hero Section -->
+    <section class="w-full gradient-bg py-20 px-6">
+     <div class="max-w-6xl mx-auto text-center">
+      <h2 class="text-5xl font-bold mb-6" style="color: #ffffff;">طور مهاراتك في الحوكمة والقانون</h2>
+      <p class="text-xl mb-10" style="color: #e1bee7;">دورات تدريبية متخصصة في حوكمة الشركات والتسيير القانوني والامتثال المؤسسي</p><button id="cta-button" class="px-10 py-4 rounded-lg text-lg font-bold transition-all transform hover:scale-105 shadow-xl pulse-animation" style="background-color: #ce93d8; color: #4a148c;"> اكتشف ما تحتاجه شركتك </button>
+     </div>
+    </section><!-- Features Section -->
+    <section class="w-full py-16 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+       <div class="text-center p-8 rounded-xl shadow-lg" style="background-color: #ffffff;">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: #f3e5f5;">
+         <svg class="w-8 h-8" style="fill: #6a1b9a;" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+         </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">دورات معتمدة</h3>
+        <p style="color: #6a1b9a;">شهادات معترف بها دولياً في مجال الحوكمة</p>
+       </div>
+       <div class="text-center p-8 rounded-xl shadow-lg" style="background-color: #ffffff;">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: #f3e5f5;">
+         <svg class="w-8 h-8" style="fill: #6a1b9a;" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+         </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">خبراء متخصصون</h3>
+        <p style="color: #6a1b9a;">محاضرون من ذوي الخبرة العملية والأكاديمية</p>
+       </div>
+       <div class="text-center p-8 rounded-xl shadow-lg" style="background-color: #ffffff;">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: #f3e5f5;">
+         <svg class="w-8 h-8" style="fill: #6a1b9a;" viewbox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+         </svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">مرونة في التعلم</h3>
+        <p style="color: #6a1b9a;">تعلم في الوقت الذي يناسبك بنظام مرن</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- Courses Section -->
+    <section id="courses" class="w-full py-16 px-6" style="background-color: #ffffff;">
+     <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-12" style="color: #4a148c;">الدورات التدريبية المتاحة</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><!-- Course 1 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">أساسيات حوكمة الشركات</h3>
+         <p class="mb-4" style="color: #6a1b9a;">تعلم المبادئ الأساسية لحوكمة الشركات والامتثال التنظيمي</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 40 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 12 وحدة</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">15,000 دج</span>
+         </div><button onclick="enrollInCourse('course1', 'أساسيات حوكمة الشركات', '40 ساعة', '12 وحدة')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course1"> التسجيل في الدورة </button>
+        </div>
+       </div><!-- Course 2 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">القانون التجاري والشركات</h3>
+         <p class="mb-4" style="color: #6a1b9a;">دراسة شاملة للقوانين التجارية وقانون الشركات</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 35 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 10 وحدات</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">12,500 دج</span>
+         </div><button onclick="enrollInCourse('course2', 'القانون التجاري والشركات', '35 ساعة', '10 وحدات')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course2"> التسجيل في الدورة </button>
+        </div>
+       </div><!-- Course 3 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">إدارة المخاطر والامتثال</h3>
+         <p class="mb-4" style="color: #6a1b9a;">استراتيجيات فعالة لإدارة المخاطر والامتثال المؤسسي</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 30 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 8 وحدات</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">10,000 دج</span>
+         </div><button onclick="enrollInCourse('course3', 'إدارة المخاطر والامتثال', '30 ساعة', '8 وحدات')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course3"> التسجيل في الدورة </button>
+        </div>
+       </div><!-- Course 4 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">الحوكمة المؤسسية المتقدمة</h3>
+         <p class="mb-4" style="color: #6a1b9a;">مفاهيم متقدمة في الحوكمة والإدارة الاستراتيجية</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 45 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 15 وحدة</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">18,000 دج</span>
+         </div><button onclick="enrollInCourse('course4', 'الحوكمة المؤسسية المتقدمة', '45 ساعة', '15 وحدة')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course4"> التسجيل في الدورة </button>
+        </div>
+       </div><!-- Course 5 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">الأخلاقيات المهنية والنزاهة</h3>
+         <p class="mb-4" style="color: #6a1b9a;">تطبيق معايير الأخلاق والنزاهة في بيئة العمل</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 25 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 7 وحدات</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">8,500 دج</span>
+         </div><button onclick="enrollInCourse('course5', 'الأخلاقيات المهنية والنزاهة', '25 ساعة', '7 وحدات')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course5"> التسجيل في الدورة </button>
+        </div>
+       </div><!-- Course 6 -->
+       <div class="card-hover rounded-xl shadow-lg overflow-hidden" style="background-color: #ffffff; border: 2px solid #e1bee7;">
+        <div class="h-48 gradient-bg flex items-center justify-center">
+         <svg class="w-20 h-20" style="fill: #ffffff;" viewbox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z" />
+         </svg>
+        </div>
+        <div class="p-6">
+         <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">التخطيط الاستراتيجي للمؤسسات</h3>
+         <p class="mb-4" style="color: #6a1b9a;">بناء وتنفيذ الخطط الاستراتيجية الفعالة</p>
+         <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ 38 ساعة</span> <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 11 وحدة</span>
+         </div>
+         <div class="mb-4 p-3 rounded-lg text-center" style="background-color: #f3e5f5;"><span class="text-2xl font-bold" style="color: #6a1b9a;">14,500 دج</span>
+         </div><button onclick="enrollInCourse('course6', 'التخطيط الاستراتيجي للمؤسسات', '38 ساعة', '11 وحدة')" class="enroll-btn w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;" data-course-id="course6"> التسجيل في الدورة </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Stats Section -->
+    <section class="w-full py-16 px-6 gradient-bg">
+     <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+       <div>
+        <h3 class="text-5xl font-bold mb-2" style="color: #ffffff;">5000+</h3>
+        <p class="text-lg" style="color: #e1bee7;"> مسجل</p>
+       </div>
+       <div>
+        <h3 class="text-5xl font-bold mb-2" style="color: #ffffff;">150+</h3>
+        <p class="text-lg" style="color: #e1bee7;">دورة تدريبية</p>
+       </div>
+       <div>
+        <h3 class="text-5xl font-bold mb-2" style="color: #ffffff;">50+</h3>
+        <p class="text-lg" style="color: #e1bee7;">خبير ومحاضر</p>
+       </div>
+       <div>
+        <h3 class="text-5xl font-bold mb-2" style="color: #ffffff;">98%</h3>
+        <p class="text-lg" style="color: #e1bee7;">نسبة الرضا</p>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div><!-- My Courses Page (Hidden by default) -->
+   <div id="myCoursesPage" style="display: none;">
+    <div class="w-full gradient-bg py-12 px-6">
+     <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold mb-4" style="color: #ffffff;">دوراتي</h2>
+      <p class="text-lg" style="color: #e1bee7;">تابع تقدمك في الدورات المسجلة</p>
+     </div>
+    </div>
+    <div class="w-full py-16 px-6">
+     <div class="max-w-6xl mx-auto">
+      <div id="myCoursesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><!-- My enrolled courses will appear here -->
+      </div>
+      <div id="noCoursesMessage" class="text-center py-20">
+       <svg class="w-24 h-24 mx-auto mb-6" style="fill: #ce93d8;" viewbox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+       </svg>
+       <h3 class="text-2xl font-bold mb-4" style="color: #4a148c;">لم تسجل في أي دورة بعد</h3>
+       <p class="text-lg mb-6" style="color: #6a1b9a;">ابدأ رحلتك التعليمية بالتسجيل في دورة جديدة</p><button onclick="showHomePage()" class="px-8 py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;"> تصفح الدورات المتاحة </button>
+      </div>
+     </div>
+    </div>
+   </div><!-- Course Details Page (Hidden by default) -->
+   <div id="courseDetailsPage" style="display: none;">
+    <div class="w-full gradient-bg py-12 px-6">
+     <div class="max-w-6xl mx-auto"><button onclick="showMyCoursesPage()" class="mb-4 px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90 flex items-center gap-2" style="background-color: rgba(255,255,255,0.2); color: #ffffff;">
+       <svg class="w-5 h-5" style="fill: currentColor;" viewbox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+       </svg> العودة إلى دوراتي </button>
+      <h2 id="courseDetailsTitle" class="text-4xl font-bold mb-4" style="color: #ffffff;">عنوان الدورة</h2>
+      <div class="flex items-center gap-6 mb-4 text-lg font-semibold" style="color: #e1bee7;">
+       <div class="flex items-center gap-2">
+        <svg class="w-5 h-5" style="fill: currentColor;" viewbox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+        </svg><span id="courseDetailsHours">40 ساعة</span>
+       </div>
+       <div class="flex items-center gap-2">
+        <svg class="w-5 h-5" style="fill: currentColor;" viewbox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
+        </svg><span id="courseDetailsUnits">12 وحدة</span>
+       </div>
+      </div>
+      <div class="bg-white rounded-full h-4 overflow-hidden shadow-inner">
+       <div id="courseProgressBar" class="h-full transition-all duration-500" style="background-color: #ce93d8; width: 0%;"></div>
+      </div>
+      <p id="courseProgressText" class="mt-2 text-lg font-semibold" style="color: #ffffff;">التقدم: 0%</p>
+     </div>
+    </div>
+    <div class="w-full py-16 px-6">
+     <div class="max-w-6xl mx-auto">
+      <h3 class="text-3xl font-bold mb-8" style="color: #4a148c;">محتوى الدورة</h3>
+      <div id="courseUnitsContainer" class="space-y-4"><!-- Course units will be dynamically loaded here -->
+      </div>
+     </div>
+    </div>
+   </div><!-- Footer -->
+   <footer class="w-full py-12 px-6" style="background-color: #4a148c;">
+    <div class="max-w-6xl mx-auto">
+     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <div>
+       <h4 class="text-xl font-bold mb-4" style="color: #ffffff;">عن الأكاديمية</h4>
+       <p style="color: #e1bee7;">منصة تعليمية متخصصة في تقديم دورات الحوكمة والتسيير والقانون</p>
+      </div>
+      <div>
+       <h4 class="text-xl font-bold mb-4" style="color: #ffffff;">روابط سريعة</h4>
+       <ul class="space-y-2">
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">الدورات</a></li>
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">المدربون</a></li>
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">الشهادات</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="text-xl font-bold mb-4" style="color: #ffffff;">الدعم</h4>
+       <ul class="space-y-2">
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">مركز المساعدة</a></li>
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">الأسئلة الشائعة</a></li>
+        <li><a href="#" class="nav-link" style="color: #e1bee7;">تواصل معنا</a></li>
+       </ul>
+      </div>
+      <div>
+       <h4 class="text-xl font-bold mb-4" style="color: #ffffff;">تابعنا</h4>
+       <div class="flex gap-4"><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:opacity-80" style="background-color: #ce93d8;">
+         <svg class="w-5 h-5" style="fill: #4a148c;" viewbox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
+         </svg></a> <a href="#" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:opacity-80" style="background-color: #ce93d8;">
+         <svg class="w-5 h-5" style="fill: #4a148c;" viewbox="0 0 24 24"><path d="M22.46 6c-.85.38-1.78.64-2.75.76 1-.6 1.76-1.55 2.12-2.68-.93.55-1.96.95-3.06 1.17-.88-.94-2.13-1.53-3.51-1.53-2.66 0-4.81 2.16-4.81 4.81 0 .38.04.75.13 1.1-4-.2-7.54-2.12-9.92-5.03-.42.72-.66 1.55-.66 2.44 0 1.67.85 3.14 2.14 4-.79-.02-1.53-.24-2.18-.6v.06c0 2.33 1.66 4.28 3.86 4.72-.4.11-.83.17-1.27.17-.31 0-.62-.03-.92-.08.62 1.94 2.43 3.35 4.57 3.39-1.67 1.31-3.78 2.1-6.08 2.1-.39 0-.78-.02-1.17-.07 2.18 1.4 4.77 2.21 7.56 2.21 9.05 0 14-7.5 14-14 0-.21 0-.42-.01-.63.96-.69 1.8-1.56 2.46-2.55z" />
+         </svg></a> <a href="#" class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:opacity-80" style="background-color: #ce93d8;">
+         <svg class="w-5 h-5" style="fill: #4a148c;" viewbox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H6.5v-7H9v7zM7.8 8.7c-.8 0-1.3-.5-1.3-1.2s.5-1.2 1.4-1.2c.8 0 1.3.5 1.3 1.2s-.6 1.2-1.4 1.2zM18 17h-2.5v-3.4c0-1 0-2.3-1.4-2.3s-1.6 1.1-1.6 2.2V17h-2.5v-7h2.4v1h0c.3-.6 1.1-1.3 2.3-1.3 2.5 0 2.9 1.6 2.9 3.7V17z" />
+         </svg></a>
+       </div>
+      </div>
+     </div>
+     <div class="border-t pt-8 text-center" style="border-color: #7b1fa2;">
+      <p style="color: #e1bee7;">جميع الحقوق محفوظة © 2026 Govertech</p>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+    // LocalStorage Data Management
+    const STORAGE_KEYS = {
+      USERS: 'academy_users',
+      ENROLLMENTS: 'academy_enrollments',
+      CURRENT_USER: 'academy_current_user'
+    };
+
+    // Helper functions for LocalStorage
+    function getStorageData(key) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : [];
+      } catch (e) {
+        console.error('Error reading from localStorage:', e);
+        return [];
+      }
+    }
+
+    function setStorageData(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error writing to localStorage:', e);
+        return false;
+      }
+    }
+
+    function getCurrentUser() {
+      try {
+        const userData = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        return userData ? JSON.parse(userData) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setCurrentUser(user) {
+      if (user) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      }
+    }
+
+    // Assessment Questions Data
+    const assessmentQuestions = [
+      {
+        id: 1,
+        question: "هل لدى شركتكم مجلس إدارة فعّال وهيكل حوكمة واضح؟",
+        options: [
+          { text: "نعم، لدينا هيكل حوكمة متكامل ومجلس إدارة فعّال", value: 0, courses: [] },
+          { text: "لدينا مجلس إدارة لكن نحتاج لتطوير الهيكل", value: 1, courses: ['course1', 'course4'] },
+          { text: "لا، نحتاج لبناء هيكل حوكمة من الصفر", value: 2, courses: ['course1'] }
+        ]
+      },
+      {
+        id: 2,
+        question: "كيف تقيمون مستوى الامتثال القانوني والتنظيمي في شركتكم؟",
+        options: [
+          { text: "ممتاز، نلتزم بجميع المتطلبات القانونية", value: 0, courses: [] },
+          { text: "جيد، لكن نحتاج لتحديثات في بعض الجوانب", value: 1, courses: ['course2', 'course3'] },
+          { text: "ضعيف، نواجه تحديات في الامتثال القانوني", value: 2, courses: ['course2'] }
+        ]
+      },
+      {
+        id: 3,
+        question: "هل لديكم نظام فعّال لإدارة المخاطر وتقييمها؟",
+        options: [
+          { text: "نعم، لدينا إطار متكامل لإدارة المخاطر", value: 0, courses: [] },
+          { text: "لدينا بعض الآليات لكنها غير منهجية", value: 1, courses: ['course3'] },
+          { text: "لا، نحتاج لإنشاء نظام إدارة مخاطر", value: 2, courses: ['course3'] }
+        ]
+      },
+      {
+        id: 4,
+        question: "ما هو مستوى النزاهة والشفافية في عمليات شركتكم؟",
+        options: [
+          { text: "عالٍ جداً، لدينا سياسات واضحة ومطبقة", value: 0, courses: [] },
+          { text: "جيد، لكن نحتاج لتعزيز ثقافة النزاهة", value: 1, courses: ['course5'] },
+          { text: "نحتاج لتطوير سياسات النزاهة والأخلاقيات", value: 2, courses: ['course5'] }
+        ]
+      },
+      {
+        id: 5,
+        question: "هل تمتلك شركتكم خطة استراتيجية واضحة ومحددة؟",
+        options: [
+          { text: "نعم، لدينا خطة استراتيجية محدثة ومتابعة", value: 0, courses: [] },
+          { text: "لدينا خطة لكن تحتاج لتحديث وتطوير", value: 1, courses: ['course6'] },
+          { text: "لا، نحتاج لبناء خطة استراتيجية", value: 2, courses: ['course6'] }
+        ]
+      },
+      {
+        id: 6,
+        question: "كيف تصفون مستوى فهم فريق الإدارة لمتطلبات الحوكمة؟",
+        options: [
+          { text: "ممتاز، الفريق على دراية كاملة", value: 0, courses: [] },
+          { text: "متوسط، بحاجة للتدريب المتقدم", value: 1, courses: ['course4'] },
+          { text: "محدود، بحاجة للتدريب الأساسي", value: 2, courses: ['course1', 'course4'] }
+        ]
+      },
+      {
+        id: 7,
+        question: "هل تواجهون تحديات في فهم القوانين التجارية وقانون الشركات؟",
+        options: [
+          { text: "لا، لدينا معرفة كافية", value: 0, courses: [] },
+          { text: "أحياناً، خاصة في التعديلات الجديدة", value: 1, courses: ['course2'] },
+          { text: "نعم، نحتاج لفهم أفضل للقوانين", value: 2, courses: ['course2'] }
+        ]
+      },
+      {
+        id: 8,
+        question: "ما هو الهدف الأساسي من تطوير الحوكمة في شركتكم؟",
+        options: [
+          { text: "الامتثال للمعايير الدولية والتوسع", value: 1, courses: ['course4', 'course6'] },
+          { text: "تحسين الأداء وإدارة المخاطر", value: 1, courses: ['course3', 'course6'] },
+          { text: "بناء أساس قوي للحوكمة والامتثال", value: 2, courses: ['course1', 'course2', 'course5'] }
+        ]
+      }
+    ];
+
+    // Course data structure
+    const courseData = {
+      course1: {
+        id: 'course1',
+        name: 'أساسيات حوكمة الشركات',
+        hours: '40 ساعة',
+        price: '15,000 دج',
+        unitsCount: '12 وحدة',
+        description: 'تعلم المبادئ الأساسية لحوكمة الشركات والامتثال التنظيمي',
+        benefits: [
+          'فهم مبادئ الحوكمة الأساسية',
+          'تطبيق معايير الشفافية والإفصاح',
+          'إدارة مجلس الإدارة بفعالية'
+        ],
+        units: [
+          { id: 1, name: 'مقدمة في الحوكمة المؤسسية', duration: '3 ساعات' },
+          { id: 2, name: 'مبادئ الحوكمة الرشيدة', duration: '4 ساعات' },
+          { id: 3, name: 'أدوار ومسؤوليات مجلس الإدارة', duration: '3 ساعات' },
+          { id: 4, name: 'حقوق المساهمين وأصحاب المصلحة', duration: '3 ساعات' },
+          { id: 5, name: 'الإفصاح والشفافية', duration: '3 ساعات' },
+          { id: 6, name: 'لجان مجلس الإدارة', duration: '4 ساعات' },
+          { id: 7, name: 'إدارة المخاطر المؤسسية', duration: '4 ساعات' },
+          { id: 8, name: 'المراجعة الداخلية والخارجية', duration: '3 ساعات' },
+          { id: 9, name: 'الامتثال والرقابة التنظيمية', duration: '4 ساعات' },
+          { id: 10, name: 'ممارسات الحوكمة الدولية', duration: '3 ساعات' },
+          { id: 11, name: 'التطبيق العملي للحوكمة', duration: '3 ساعات' },
+          { id: 12, name: 'دراسات حالة ومشروع نهائي', duration: '3 ساعات' }
+        ]
+      },
+      course2: {
+        id: 'course2',
+        name: 'القانون التجاري والشركات',
+        hours: '35 ساعة',
+        price: '12,500 دج',
+        unitsCount: '10 وحدات',
+        description: 'دراسة شاملة للقوانين التجارية وقانون الشركات',
+        benefits: [
+          'فهم القوانين التجارية الأساسية',
+          'التعامل مع العقود التجارية',
+          'إدارة الشركات قانونياً'
+        ],
+        units: [
+          { id: 1, name: 'أساسيات القانون التجاري', duration: '3 ساعات' },
+          { id: 2, name: 'الأعمال التجارية والتاجر', duration: '4 ساعات' },
+          { id: 3, name: 'العقود التجارية', duration: '4 ساعات' },
+          { id: 4, name: 'الشركات التجارية - الأنواع والتأسيس', duration: '4 ساعات' },
+          { id: 5, name: 'شركات الأشخاص', duration: '3 ساعات' },
+          { id: 6, name: 'شركات الأموال', duration: '4 ساعات' },
+          { id: 7, name: 'الاندماج والاستحواذ', duration: '3 ساعات' },
+          { id: 8, name: 'حل وتصفية الشركات', duration: '3 ساعات' },
+          { id: 9, name: 'الإفلاس والتسوية', duration: '4 ساعات' },
+          { id: 10, name: 'النزاعات التجارية والتحكيم', duration: '3 ساعات' }
+        ]
+      },
+      course3: {
+        id: 'course3',
+        name: 'إدارة المخاطر والامتثال',
+        hours: '30 ساعة',
+        price: '10,000 دج',
+        unitsCount: '8 وحدات',
+        description: 'استراتيجيات فعالة لإدارة المخاطر والامتثال المؤسسي',
+        benefits: [
+          'تحديد وتقييم المخاطر',
+          'بناء برامج الامتثال',
+          'تطبيق استراتيجيات معالجة المخاطر'
+        ],
+        units: [
+          { id: 1, name: 'مقدمة في إدارة المخاطر', duration: '3 ساعات' },
+          { id: 2, name: 'تحديد وتقييم المخاطر', duration: '4 ساعات' },
+          { id: 3, name: 'استراتيجيات معالجة المخاطر', duration: '4 ساعات' },
+          { id: 4, name: 'مراقبة المخاطر وإعداد التقارير', duration: '4 ساعات' },
+          { id: 5, name: 'أساسيات الامتثال المؤسسي', duration: '4 ساعات' },
+          { id: 6, name: 'برامج الامتثال وأفضل الممارسات', duration: '4 ساعات' },
+          { id: 7, name: 'التدقيق والمراجعة الداخلية', duration: '4 ساعات' },
+          { id: 8, name: 'التطبيق العملي ودراسات حالة', duration: '3 ساعات' }
+        ]
+      },
+      course4: {
+        id: 'course4',
+        name: 'الحوكمة المؤسسية المتقدمة',
+        hours: '45 ساعة',
+        price: '18,000 دج',
+        unitsCount: '15 وحدة',
+        description: 'مفاهيم متقدمة في الحوكمة والإدارة الاستراتيجية',
+        benefits: [
+          'تطبيق النظريات المتقدمة في الحوكمة',
+          'قياس وتقييم أداء الحوكمة',
+          'الحوكمة في سياقات متخصصة'
+        ],
+        units: [
+          { id: 1, name: 'النظريات المتقدمة في الحوكمة', duration: '3 ساعات' },
+          { id: 2, name: 'الحوكمة الاستراتيجية', duration: '3 ساعات' },
+          { id: 3, name: 'قياس أداء الحوكمة', duration: '3 ساعات' },
+          { id: 4, name: 'الحوكمة في الشركات العائلية', duration: '3 ساعات' },
+          { id: 5, name: 'حوكمة الشركات المساهمة العامة', duration: '3 ساعات' },
+          { id: 6, name: 'حوكمة المؤسسات غير الربحية', duration: '3 ساعات' },
+          { id: 7, name: 'حوكمة القطاع العام', duration: '3 ساعات' },
+          { id: 8, name: 'حوكمة تكنولوجيا المعلومات', duration: '3 ساعات' },
+          { id: 9, name: 'الحوكمة والتحول الرقمي', duration: '3 ساعات' },
+          { id: 10, name: 'الحوكمة البيئية والاجتماعية', duration: '3 ساعات' },
+          { id: 11, name: 'حوكمة سلاسل التوريد', duration: '3 ساعات' },
+          { id: 12, name: 'الحوكمة في الأزمات', duration: '3 ساعات' },
+          { id: 13, name: 'الحوكمة الدولية المقارنة', duration: '3 ساعات' },
+          { id: 14, name: 'مشروع بحثي متقدم', duration: '3 ساعات' },
+          { id: 15, name: 'التقييم النهائي والشهادة', duration: '3 ساعات' }
+        ]
+      },
+      course5: {
+        id: 'course5',
+        name: 'الأخلاقيات المهنية والنزاهة',
+        hours: '25 ساعة',
+        price: '8,500 دج',
+        unitsCount: '7 وحدات',
+        description: 'تطبيق معايير الأخلاق والنزاهة في بيئة العمل',
+        benefits: [
+          'بناء ثقافة النزاهة المؤسسية',
+          'تطبيق معايير الأخلاقيات المهنية',
+          'مكافحة الفساد وغسل الأموال'
+        ],
+        units: [
+          { id: 1, name: 'مقدمة في الأخلاقيات المهنية', duration: '3 ساعات' },
+          { id: 2, name: 'القيم والمبادئ الأخلاقية', duration: '4 ساعات' },
+          { id: 3, name: 'النزاهة والشفافية المؤسسية', duration: '4 ساعات' },
+          { id: 4, name: 'مكافحة الفساد وغسل الأموال', duration: '4 ساعات' },
+          { id: 5, name: 'تضارب المصالح', duration: '3 ساعات' },
+          { id: 6, name: 'ميثاق السلوك المهني', duration: '4 ساعات' },
+          { id: 7, name: 'تطبيقات عملية ودراسات حالة', duration: '3 ساعات' }
+        ]
+      },
+      course6: {
+        id: 'course6',
+        name: 'التخطيط الاستراتيجي للمؤسسات',
+        hours: '38 ساعة',
+        price: '14,500 دج',
+        unitsCount: '11 وحدة',
+        description: 'بناء وتنفيذ الخطط الاستراتيجية الفعالة',
+        benefits: [
+          'وضع الرؤية والأهداف الاستراتيجية',
+          'تنفيذ الاستراتيجية بفعالية',
+          'قياس الأداء بمؤشرات KPIs'
+        ],
+        units: [
+          { id: 1, name: 'أساسيات التخطيط الاستراتيجي', duration: '3 ساعات' },
+          { id: 2, name: 'الرؤية والرسالة والقيم', duration: '3 ساعات' },
+          { id: 3, name: 'التحليل الاستراتيجي SWOT', duration: '4 ساعات' },
+          { id: 4, name: 'وضع الأهداف الاستراتيجية', duration: '4 ساعات' },
+          { id: 5, name: 'صياغة الاستراتيجية', duration: '4 ساعات' },
+          { id: 6, name: 'تنفيذ الاستراتيجية', duration: '4 ساعات' },
+          { id: 7, name: 'بطاقة الأداء المتوازن', duration: '3 ساعات' },
+          { id: 8, name: 'مؤشرات الأداء الرئيسية KPIs', duration: '3 ساعات' },
+          { id: 9, name: 'إدارة التغيير الاستراتيجي', duration: '4 ساعات' },
+          { id: 10, name: 'المراجعة والتقييم الاستراتيجي', duration: '3 ساعات' },
+          { id: 11, name: 'مشروع تطبيقي في التخطيط', duration: '3 ساعات' }
+        ]
+      }
+    };
+
+    // Assessment State
+    let currentQuestionIndex = 0;
+    let assessmentAnswers = [];
+
+    // Current user state
+    let currentUser = getCurrentUser();
+
+    // Initialize UI based on login state
+    if (currentUser) {
+      updateUIForLoggedInUser(currentUser.fullName);
+    }
+
+    // Open Assessment Modal
+    document.getElementById('cta-button').addEventListener('click', () => {
+      openAssessmentModal();
+    });
+
+    function openAssessmentModal() {
+      currentQuestionIndex = 0;
+      assessmentAnswers = [];
+      document.getElementById('assessmentModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      renderProgressIndicator();
+      loadQuestion(currentQuestionIndex);
+    }
+
+    function closeAssessmentModal() {
+      document.getElementById('assessmentModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('closeAssessment').addEventListener('click', closeAssessmentModal);
+
+    function renderProgressIndicator() {
+      const indicator = document.getElementById('progressIndicator');
+      indicator.innerHTML = '';
+      
+      for (let i = 0; i < assessmentQuestions.length; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'progress-step w-3 h-3 rounded-full';
+        dot.style.backgroundColor = i === currentQuestionIndex ? '#6a1b9a' : 
+                                    i < currentQuestionIndex ? '#4caf50' : '#e0e0e0';
+        if (i === currentQuestionIndex) {
+          dot.classList.add('active');
+        } else if (i < currentQuestionIndex) {
+          dot.classList.add('completed');
+        }
+        indicator.appendChild(dot);
+      }
+    }
+
+    function loadQuestion(index) {
+      const question = assessmentQuestions[index];
+      const content = document.getElementById('assessmentContent');
+      
+      content.innerHTML = `
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold mb-6" style="color: #4a148c;">${question.question}</h3>
+          <div class="space-y-4">
+            ${question.options.map((option, i) => `
+              <div class="question-option" data-option-index="${i}">
+                <div class="flex items-start gap-4">
+                  <div class="w-6 h-6 rounded-full border-2 flex-shrink-0 mt-1 flex items-center justify-center" style="border-color: #6a1b9a;">
+                    <div class="w-3 h-3 rounded-full hidden option-check" style="background-color: #6a1b9a;"></div>
+                  </div>
+                  <p class="text-lg" style="color: #4a148c;">${option.text}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Add click handlers
+      document.querySelectorAll('.question-option').forEach(option => {
+        option.addEventListener('click', function() {
+          document.querySelectorAll('.question-option').forEach(opt => {
+            opt.classList.remove('selected');
+            opt.querySelector('.option-check').classList.add('hidden');
+          });
+          this.classList.add('selected');
+          this.querySelector('.option-check').classList.remove('hidden');
+          document.getElementById('nextQuestion').disabled = false;
+        });
+      });
+
+      // Update progress text
+      document.getElementById('progressText').textContent = `السؤال ${index + 1} من ${assessmentQuestions.length}`;
+      
+      // Update navigation buttons
+      document.getElementById('prevQuestion').style.display = index > 0 ? 'block' : 'none';
+      document.getElementById('nextQuestion').textContent = 
+        index === assessmentQuestions.length - 1 ? 'عرض النتائج' : 'السؤال التالي';
+      document.getElementById('nextQuestion').disabled = true;
+      
+      renderProgressIndicator();
+    }
+
+    document.getElementById('prevQuestion').addEventListener('click', () => {
+      if (currentQuestionIndex > 0) {
+        assessmentAnswers.pop();
+        currentQuestionIndex--;
+        loadQuestion(currentQuestionIndex);
+      }
+    });
+
+    document.getElementById('nextQuestion').addEventListener('click', () => {
+      const selectedOption = document.querySelector('.question-option.selected');
+      if (!selectedOption) return;
+      
+      const optionIndex = parseInt(selectedOption.getAttribute('data-option-index'));
+      const question = assessmentQuestions[currentQuestionIndex];
+      const answer = question.options[optionIndex];
+      
+      assessmentAnswers[currentQuestionIndex] = {
+        questionId: question.id,
+        answer: answer
+      };
+
+      if (currentQuestionIndex < assessmentQuestions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion(currentQuestionIndex);
+      } else {
+        // Show results
+        showAssessmentResults();
+      }
+    });
+
+    function showAssessmentResults() {
+      // Calculate recommended courses
+      const courseScores = {};
+      
+      assessmentAnswers.forEach(answer => {
+        answer.answer.courses.forEach(courseId => {
+          courseScores[courseId] = (courseScores[courseId] || 0) + 1;
+        });
+      });
+
+      // Sort courses by score
+      const recommendedCourseIds = Object.keys(courseScores)
+        .sort((a, b) => courseScores[b] - courseScores[a])
+        .slice(0, 3); // Top 3 courses
+
+      // If no specific recommendations, suggest basic course
+      if (recommendedCourseIds.length === 0) {
+        recommendedCourseIds.push('course1');
+      }
+
+      closeAssessmentModal();
+      displayResults(recommendedCourseIds, courseScores);
+    }
+
+    function displayResults(recommendedCourseIds, scores) {
+      const resultsModal = document.getElementById('resultsModal');
+      const summaryDiv = document.getElementById('assessmentSummary');
+      const coursesDiv = document.getElementById('recommendedCourses');
+
+      // Summary
+      const totalQuestions = assessmentQuestions.length;
+      const priorityAreas = [];
+      
+      if (scores['course1'] || scores['course4']) priorityAreas.push('الحوكمة المؤسسية');
+      if (scores['course2']) priorityAreas.push('الامتثال القانوني');
+      if (scores['course3']) priorityAreas.push('إدارة المخاطر');
+      if (scores['course5']) priorityAreas.push('النزاهة والأخلاقيات');
+      if (scores['course6']) priorityAreas.push('التخطيط الاستراتيجي');
+
+      summaryDiv.innerHTML = `
+        <h3 class="text-xl font-bold mb-4" style="color: #4a148c;">📊 ملخص التقييم</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="p-4 rounded-lg" style="background-color: #ffffff;">
+            <p class="text-sm font-semibold mb-1" style="color: #6a1b9a;">عدد الأسئلة</p>
+            <p class="text-2xl font-bold" style="color: #4a148c;">${totalQuestions}</p>
+          </div>
+          <div class="p-4 rounded-lg" style="background-color: #ffffff;">
+            <p class="text-sm font-semibold mb-1" style="color: #6a1b9a;">الدورات الموصى بها</p>
+            <p class="text-2xl font-bold" style="color: #4a148c;">${recommendedCourseIds.length}</p>
+          </div>
+        </div>
+        ${priorityAreas.length > 0 ? `
+          <div class="p-4 rounded-lg" style="background-color: #ffffff;">
+            <p class="font-semibold mb-2" style="color: #6a1b9a;">المجالات ذات الأولوية:</p>
+            <div class="flex flex-wrap gap-2">
+              ${priorityAreas.map(area => `
+                <span class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: #e1bee7; color: #4a148c;">
+                  ${area}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      // Recommended Courses
+      coursesDiv.innerHTML = recommendedCourseIds.map((courseId, index) => {
+        const course = courseData[courseId];
+        const priority = index === 0 ? 'عالية' : index === 1 ? 'متوسطة' : 'منخفضة';
+        const priorityColor = index === 0 ? '#4caf50' : index === 1 ? '#ff9800' : '#2196f3';
+        
+        return `
+          <div class="p-6 rounded-xl border-2" style="border-color: #e1bee7; background-color: #ffffff;">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold" style="background-color: ${priorityColor}; color: #ffffff;">
+                    أولوية ${priority}
+                  </span>
+                  ${index === 0 ? '<span class="text-xl">⭐</span>' : ''}
+                </div>
+                <h4 class="text-xl font-bold mb-2" style="color: #4a148c;">${course.name}</h4>
+                <p class="mb-3" style="color: #6a1b9a;">${course.description}</p>
+                <div class="flex items-center gap-4 mb-3 text-sm font-semibold" style="color: #7b1fa2;">
+                  <span>⏰ ${course.hours}</span>
+                  <span>📖 ${course.unitsCount}</span>
+                  <span class="text-lg font-bold" style="color: #6a1b9a;">${course.price}</span>
+                </div>
+                <div class="mb-4">
+                  <p class="font-semibold mb-2" style="color: #4a148c;">ما ستتعلمه:</p>
+                  <ul class="space-y-1">
+                    ${course.benefits.map(benefit => `
+                      <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" style="fill: #4caf50;" viewBox="0 0 24 24">
+                          <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                        </svg>
+                        <span style="color: #6a1b9a;">${benefit}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <button onclick="enrollInCourse('${courseId}', '${course.name}', '${course.hours}', '${course.unitsCount}')" 
+                    class="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" 
+                    style="background-color: #6a1b9a; color: #ffffff;">
+              التسجيل في هذه الدورة
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      resultsModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    document.getElementById('closeResults').addEventListener('click', () => {
+      document.getElementById('resultsModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+    });
+
+    document.getElementById('viewAllCourses').addEventListener('click', () => {
+      document.getElementById('resultsModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+      showHomePage();
+      document.getElementById('courses').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Update enrollment buttons based on user's enrollments
+    function updateEnrollmentButtons() {
+      if (!currentUser) return;
+      
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      const userEnrollments = enrollments.filter(e => e.email === currentUser.email);
+      
+      document.querySelectorAll('.enroll-btn').forEach(btn => {
+        const courseId = btn.getAttribute('data-course-id');
+        const isEnrolled = userEnrollments.some(e => e.courseId === courseId);
+        
+        if (isEnrolled) {
+          btn.textContent = 'مسجل بالفعل ✓';
+          btn.style.backgroundColor = '#4caf50';
+          btn.disabled = true;
+          btn.style.cursor = 'not-allowed';
+        }
+      });
+    }
+
+    // Enroll in course
+    let pendingCourseEnrollment = null;
+
+    function enrollInCourse(courseId, courseName, hours, units) {
+      if (!currentUser) {
+        showMessage('يجب تسجيل الدخول أولاً للتسجيل في الدورة', 'warning');
+        document.getElementById('authModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return;
+      }
+
+      // Check if already enrolled
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      const alreadyEnrolled = enrollments.some(e => 
+        e.email === currentUser.email && e.courseId === courseId
+      );
+
+      if (alreadyEnrolled) {
+        showMessage('أنت مسجل في هذه الدورة بالفعل', 'info');
+        return;
+      }
+
+      // Close results modal if open
+      document.getElementById('resultsModal').classList.remove('active');
+
+      // Open payment modal
+      pendingCourseEnrollment = { courseId, courseName, hours, units };
+      openPaymentModal(courseName);
+    }
+
+    function openPaymentModal(courseName) {
+      const course = Object.values(courseData).find(c => c.name === courseName);
+      document.getElementById('paymentCourseSubtitle').textContent = courseName;
+      document.getElementById('coursePrice').textContent = course ? course.price : '15,000 دج';
+      document.getElementById('paymentModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Pre-fill email if logged in
+      if (currentUser && currentUser.email) {
+        document.getElementById('pay-email').value = currentUser.email;
+      }
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+      document.getElementById('paymentForm').reset();
+      document.getElementById('paymentMessage').classList.add('hidden');
+      pendingCourseEnrollment = null;
+    }
+
+    // Payment form handlers
+    document.getElementById('cancelPayment').addEventListener('click', closePaymentModal);
+
+    document.getElementById('paymentModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('paymentModal')) {
+        closePaymentModal();
+      }
+    });
+
+    // Card number formatting
+    function formatCardNumber(input) {
+      let value = input.value.replace(/\s/g, '');
+      value = value.replace(/[^0-9]/g, '');
+      let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+      input.value = formattedValue;
+    }
+
+    // Expiry date formatting
+    function formatExpiry(input) {
+      let value = input.value.replace(/\D/g, '');
+      if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+      }
+      input.value = value;
+    }
+
+    // Handle payment form submission
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!pendingCourseEnrollment) return;
+
+      const confirmBtn = document.getElementById('confirmPaymentBtn');
+      const paymentMessage = document.getElementById('paymentMessage');
+
+      // Show loading state
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'جاري معالجة الدفع...';
+      confirmBtn.style.opacity = '0.7';
+
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const enrollment = {
+        email: currentUser.email,
+        courseId: pendingCourseEnrollment.courseId,
+        courseName: pendingCourseEnrollment.courseName,
+        enrolledAt: new Date().toISOString(),
+        progress: 0,
+        completedUnits: ''
+      };
+
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      enrollments.push(enrollment);
+      const success = setStorageData(STORAGE_KEYS.ENROLLMENTS, enrollments);
+
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'تأكيد الشراء';
+      confirmBtn.style.opacity = '1';
+
+      if (success) {
+        paymentMessage.textContent = '✓ تمت عملية الشراء بنجاح! جاري تحويلك إلى دوراتي...';
+        paymentMessage.style.backgroundColor = '#e8f5e9';
+        paymentMessage.style.color = '#2e7d32';
+        paymentMessage.classList.remove('hidden');
+
+        setTimeout(() => {
+          closePaymentModal();
+          showMyCoursesPage();
+          showMessage('✓ مرحباً بك في دورتك الجديدة!', 'success');
+        }, 2000);
+      } else {
+        paymentMessage.textContent = '⚠️ حدث خطأ أثناء معالجة الدفع. حاول مرة أخرى';
+        paymentMessage.style.backgroundColor = '#ffebee';
+        paymentMessage.style.color = '#c62828';
+        paymentMessage.classList.remove('hidden');
+      }
+    });
+
+    // Show notification message
+    function showMessage(text, type) {
+      const existingMsg = document.getElementById('globalMessage');
+      if (existingMsg) existingMsg.remove();
+
+      const colors = {
+        success: { bg: '#e8f5e9', color: '#2e7d32' },
+        error: { bg: '#ffebee', color: '#c62828' },
+        warning: { bg: '#fff3e0', color: '#e65100' },
+        info: { bg: '#e3f2fd', color: '#1565c0' }
+      };
+
+      const msgDiv = document.createElement('div');
+      msgDiv.id = 'globalMessage';
+      msgDiv.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background-color: ${colors[type].bg};
+        color: ${colors[type].color};
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      msgDiv.textContent = text;
+      document.body.appendChild(msgDiv);
+
+      setTimeout(() => {
+        msgDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => msgDiv.remove(), 300);
+      }, 3000);
+    }
+
+    // Page navigation functions
+    function showHomePage() {
+      document.getElementById('homePage').style.display = 'block';
+      document.getElementById('myCoursesPage').style.display = 'none';
+      document.getElementById('courseDetailsPage').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showMyCoursesPage() {
+      if (!currentUser) {
+        showMessage('يجب تسجيل الدخول أولاً', 'warning');
+        document.getElementById('authModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return;
+      }
+
+      document.getElementById('homePage').style.display = 'none';
+      document.getElementById('myCoursesPage').style.display = 'block';
+      document.getElementById('courseDetailsPage').style.display = 'none';
+      renderMyCourses();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderMyCourses() {
+      const container = document.getElementById('myCoursesContainer');
+      const noCoursesMsg = document.getElementById('noCoursesMessage');
+      
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      const userEnrollments = enrollments.filter(e => e.email === currentUser.email);
+
+      if (userEnrollments.length === 0) {
+        container.style.display = 'none';
+        noCoursesMsg.style.display = 'block';
+        return;
+      }
+
+      container.style.display = 'grid';
+      noCoursesMsg.style.display = 'none';
+      container.innerHTML = '';
+
+      userEnrollments.forEach(enrollment => {
+        const course = courseData[enrollment.courseId];
+        if (!course) return;
+
+        const progressPercent = Math.round(enrollment.progress || 0);
+        
+        const card = document.createElement('div');
+        card.className = 'card-hover rounded-xl shadow-lg overflow-hidden';
+        card.style.cssText = 'background-color: #ffffff; border: 2px solid #e1bee7;';
+        
+        card.innerHTML = `
+          <div class="h-48 gradient-bg flex items-center justify-center">
+            <svg class="w-20 h-20" style="fill: #ffffff;" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold mb-3" style="color: #4a148c;">${course.name}</h3>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-sm font-semibold" style="color: #7b1fa2;">⏰ ${course.hours}</span>
+              <span class="text-sm font-semibold" style="color: #7b1fa2;">📖 ${course.unitsCount}</span>
+            </div>
+            <div class="mb-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm font-semibold" style="color: #4a148c;">التقدم</span>
+                <span class="text-sm font-semibold" style="color: #6a1b9a;">${progressPercent}%</span>
+              </div>
+              <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="h-full transition-all duration-500" style="background-color: #6a1b9a; width: ${progressPercent}%;"></div>
+              </div>
+            </div>
+            <button onclick="viewCourseDetails('${enrollment.courseId}')" class="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;">
+              متابعة التعلم
+            </button>
+          </div>
+        `;
+        
+        container.appendChild(card);
+      });
+    }
+
+    let currentCourseView = null;
+
+    function viewCourseDetails(courseId) {
+      currentCourseView = courseId;
+      loadCourseDetails(courseId);
+      document.getElementById('homePage').style.display = 'none';
+      document.getElementById('myCoursesPage').style.display = 'none';
+      document.getElementById('courseDetailsPage').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function loadCourseDetails(courseId) {
+      const course = courseData[courseId];
+      if (!course) return;
+
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      const enrollment = enrollments.find(e => 
+        e.email === currentUser.email && e.courseId === courseId
+      );
+
+      if (!enrollment) return;
+
+      const completedUnits = enrollment.completedUnits ? enrollment.completedUnits.split(',').map(Number) : [];
+      const progressPercent = Math.round(enrollment.progress || 0);
+
+      document.getElementById('courseDetailsTitle').textContent = course.name;
+      document.getElementById('courseDetailsHours').textContent = course.hours;
+      document.getElementById('courseDetailsUnits').textContent = course.unitsCount;
+      document.getElementById('courseProgressBar').style.width = `${progressPercent}%`;
+      document.getElementById('courseProgressText').textContent = `التقدم: ${progressPercent}%`;
+
+      const unitsContainer = document.getElementById('courseUnitsContainer');
+      unitsContainer.innerHTML = '';
+
+      course.units.forEach(unit => {
+        const isCompleted = completedUnits.includes(unit.id);
+        
+        const unitDiv = document.createElement('div');
+        unitDiv.className = 'unit-item rounded-xl p-6 shadow-md transition-all cursor-pointer';
+        unitDiv.style.cssText = isCompleted ? 
+          'background-color: #e8f5e9; border: 2px solid #4caf50;' : 
+          'background-color: #ffffff; border: 2px solid #e1bee7;';
+        
+        unitDiv.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 flex-1">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl" style="background-color: ${isCompleted ? '#4caf50' : '#6a1b9a'}; color: #ffffff;">
+                ${unit.id}
+              </div>
+              <div class="flex-1">
+                <h4 class="text-lg font-bold mb-1" style="color: #4a148c;">${unit.name}</h4>
+                <p class="text-sm" style="color: #6a1b9a;">${unit.duration}</p>
+              </div>
+            </div>
+            <div>
+              ${isCompleted ? 
+                `<div class="flex items-center gap-2">
+                  <svg class="w-8 h-8" style="fill: #4caf50;" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <span class="font-bold" style="color: #4caf50;">مكتمل</span>
+                </div>` :
+                `<button onclick="completeUnit('${courseId}', ${unit.id})" class="px-6 py-2 rounded-lg font-semibold transition-all hover:opacity-90" style="background-color: #6a1b9a; color: #ffffff;">
+                  إكمال الوحدة
+                </button>`
+              }
+            </div>
+          </div>
+        `;
+        
+        unitsContainer.appendChild(unitDiv);
+      });
+    }
+
+    function completeUnit(courseId, unitId) {
+      const enrollments = getStorageData(STORAGE_KEYS.ENROLLMENTS);
+      const enrollmentIndex = enrollments.findIndex(e => 
+        e.email === currentUser.email && e.courseId === courseId
+      );
+
+      if (enrollmentIndex === -1) return;
+
+      const enrollment = enrollments[enrollmentIndex];
+      const course = courseData[courseId];
+      const completedUnits = enrollment.completedUnits ? enrollment.completedUnits.split(',').map(Number) : [];
+      
+      if (completedUnits.includes(unitId)) {
+        showMessage('هذه الوحدة مكتملة بالفعل', 'info');
+        return;
+      }
+
+      completedUnits.push(unitId);
+      const newProgress = (completedUnits.length / course.units.length) * 100;
+
+      enrollments[enrollmentIndex].completedUnits = completedUnits.join(',');
+      enrollments[enrollmentIndex].progress = newProgress;
+
+      const success = setStorageData(STORAGE_KEYS.ENROLLMENTS, enrollments);
+
+      if (success) {
+        showMessage('✓ تم إكمال الوحدة بنجاح!', 'success');
+        loadCourseDetails(courseId);
+      } else {
+        showMessage('⚠️ حدث خطأ. حاول مرة أخرى', 'error');
+      }
+    }
+
+    // Modal and Tab Management
+    const authModal = document.getElementById('authModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const closeModal = document.getElementById('closeModal');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const registerMessage = document.getElementById('registerMessage');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+
+    // Open modal
+    loginBtn.addEventListener('click', () => {
+      if (currentUser) {
+        showUserMenu();
+      } else {
+        authModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        showLoginTab();
+      }
+    });
+
+    // Close modal
+    closeModal.addEventListener('click', () => {
+      closeModalFunc();
+    });
+
+    // Close modal on overlay click
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) {
+        closeModalFunc();
+      }
+    });
+
+    function closeModalFunc() {
+      authModal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+      loginForm.reset();
+      registerForm.reset();
+      loginMessage.classList.add('hidden');
+      registerMessage.classList.add('hidden');
+    }
+
+    // Tab switching
+    loginTab.addEventListener('click', () => {
+      showLoginTab();
+    });
+
+    registerTab.addEventListener('click', () => {
+      showRegisterTab();
+    });
+
+    function showLoginTab() {
+      loginTab.classList.add('active');
+      registerTab.classList.remove('active');
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      loginMessage.classList.add('hidden');
+      registerMessage.classList.add('hidden');
+    }
+
+    function showRegisterTab() {
+      registerTab.classList.add('active');
+      loginTab.classList.remove('active');
+      registerForm.style.display = 'block';
+      loginForm.style.display = 'none';
+      loginMessage.classList.add('hidden');
+      registerMessage.classList.add('hidden');
+    }
+
+    // Handle registration
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fullName = document.getElementById('reg-fullname').value.trim();
+      const email = document.getElementById('reg-email').value.trim().toLowerCase();
+      const password = document.getElementById('reg-password').value;
+      const confirmPassword = document.getElementById('reg-confirm-password').value;
+      const registerBtn = document.getElementById('registerBtn');
+
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        registerMessage.textContent = '⚠️ كلمتا المرور غير متطابقتين';
+        registerMessage.style.backgroundColor = '#ffebee';
+        registerMessage.style.color = '#c62828';
+        registerMessage.classList.remove('hidden');
+        return;
+      }
+
+      const users = getStorageData(STORAGE_KEYS.USERS);
+
+      // Check if email already exists
+      const emailExists = users.some(u => u.email === email);
+      if (emailExists) {
+        registerMessage.textContent = '⚠️ البريد الإلكتروني مسجل بالفعل';
+        registerMessage.style.backgroundColor = '#ffebee';
+        registerMessage.style.color = '#c62828';
+        registerMessage.classList.remove('hidden');
+        return;
+      }
+
+      // Show loading state
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'جاري إنشاء الحساب...';
+      registerBtn.style.opacity = '0.7';
+
+      // Create new user
+      const newUser = {
+        email: email,
+        password: password,
+        fullName: fullName,
+        registeredAt: new Date().toISOString()
+      };
+
+      users.push(newUser);
+      const success = setStorageData(STORAGE_KEYS.USERS, users);
+
+      registerBtn.disabled = false;
+      registerBtn.textContent = 'إنشاء حساب';
+      registerBtn.style.opacity = '1';
+
+      if (success) {
+        registerMessage.textContent = '✓ تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...';
+        registerMessage.style.backgroundColor = '#e8f5e9';
+        registerMessage.style.color = '#2e7d32';
+        registerMessage.classList.remove('hidden');
+
+        setTimeout(() => {
+          closeModalFunc();
+          currentUser = { email, fullName };
+          setCurrentUser(currentUser);
+          updateUIForLoggedInUser(fullName);
+        }, 1500);
+      } else {
+        registerMessage.textContent = '⚠️ حدث خطأ أثناء إنشاء الحساب. حاول مرة أخرى';
+        registerMessage.style.backgroundColor = '#ffebee';
+        registerMessage.style.color = '#c62828';
+        registerMessage.classList.remove('hidden');
+      }
+    });
+
+    // Handle login form submission
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const password = document.getElementById('login-password').value;
+      const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+      // Show loading state
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = 'جاري تسجيل الدخول...';
+      loginSubmitBtn.style.opacity = '0.7';
+
+      // Small delay to simulate checking
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Find user in database
+      const users = getStorageData(STORAGE_KEYS.USERS);
+      const user = users.find(u => u.email === email && u.password === password);
+
+      loginSubmitBtn.disabled = false;
+      loginSubmitBtn.textContent = 'تسجيل الدخول';
+      loginSubmitBtn.style.opacity = '1';
+
+      if (user) {
+        // Successful login
+        loginMessage.textContent = `✓ مرحباً بك ${user.fullName}!`;
+        loginMessage.style.backgroundColor = '#e8f5e9';
+        loginMessage.style.color = '#2e7d32';
+        loginMessage.classList.remove('hidden');
+        
+        setTimeout(() => {
+          currentUser = { email: user.email, fullName: user.fullName };
+          setCurrentUser(currentUser);
+          updateUIForLoggedInUser(user.fullName);
+          closeModalFunc();
+        }, 1500);
+      } else {
+        // Failed login
+        loginMessage.textContent = '⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة';
+        loginMessage.style.backgroundColor = '#ffebee';
+        loginMessage.style.color = '#c62828';
+        loginMessage.classList.remove('hidden');
+      }
+    });
+
+    function updateUIForLoggedInUser(userName) {
+      loginBtn.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5" style="fill: currentColor;" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+          <span>${userName}</span>
+        </div>
+      `;
+      document.getElementById('myCoursesLink').classList.remove('hidden');
+      updateEnrollmentButtons();
+    }
+
+    function showUserMenu() {
+      const userMenuHTML = `
+        <div style="position: fixed; top: 80px; left: 20px; background-color: white; border-radius: 12px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 1000; min-width: 200px;">
+          <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid #e1bee7;">
+            <p style="font-weight: bold; color: #4a148c; margin-bottom: 4px;">${currentUser.fullName}</p>
+            <p style="font-size: 14px; color: #6a1b9a;">${currentUser.email}</p>
+          </div>
+          <button id="logoutBtn" style="width: 100%; padding: 10px; background-color: #6a1b9a; color: white; border-radius: 8px; font-weight: bold; transition: opacity 0.3s;">
+            تسجيل الخروج
+          </button>
+        </div>
+      `;
+      
+      const existingMenu = document.getElementById('userMenu');
+      if (existingMenu) {
+        existingMenu.remove();
+        return;
+      }
+      
+      const menuDiv = document.createElement('div');
+      menuDiv.id = 'userMenu';
+      menuDiv.innerHTML = userMenuHTML;
+      document.body.appendChild(menuDiv);
+      
+      const logoutBtn = document.getElementById('logoutBtn');
+      logoutBtn.addEventListener('click', () => {
+        currentUser = null;
+        setCurrentUser(null);
+        loginBtn.innerHTML = 'تسجيل الدخول';
+        document.getElementById('myCoursesLink').classList.add('hidden');
+        menuDiv.remove();
+        showHomePage();
+      });
+      
+      logoutBtn.addEventListener('mouseenter', () => {
+        logoutBtn.style.opacity = '0.9';
+      });
+      
+      logoutBtn.addEventListener('mouseleave', () => {
+        logoutBtn.style.opacity = '1';
+      });
+      
+      // Close menu on click outside
+      setTimeout(() => {
+        document.addEventListener('click', function closeMenu(e) {
+          if (!menuDiv.contains(e.target) && e.target !== loginBtn && !loginBtn.contains(e.target)) {
+            menuDiv.remove();
+            document.removeEventListener('click', closeMenu);
+          }
+        });
+      }, 100);
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b736a97e4eba0e6',t:'MTc2NzI4NTE4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
